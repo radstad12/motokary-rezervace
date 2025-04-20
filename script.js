@@ -112,3 +112,86 @@ document.getElementById("adminBtn").addEventListener("click", () => {
 
 // Úprava renderování obsazeného slotu
 
+
+
+function generateSlotTable(reservations) {
+  table.innerHTML = "";
+  const dateStr = formatDate(selectedDate);
+  const allSlots = [];
+
+  for (let h = 17; h <= 23; h++) {
+    const row = document.createElement("tr");
+    const label = document.createElement("td");
+    label.textContent = `${h}h`;
+    label.className = "hour-label";
+    row.appendChild(label);
+
+    [0, 20, 40].forEach(min => {
+      const time = `${h.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')}`;
+      const td = document.createElement("td");
+      const slot = document.createElement("div");
+      slot.className = "slot";
+      slot.textContent = time;
+      slot.dataset.time = time;
+
+      if (reservations && reservations[dateStr] && reservations[dateStr][time]) {
+        const resData = reservations[dateStr][time];
+        slot.classList.add("taken");
+
+        if (isAdmin) {
+          slot.title = `Jméno: ${resData.name}\nTel: ${resData.phone}`;
+          const deleteBtn = document.createElement("button");
+          deleteBtn.textContent = "✖";
+          deleteBtn.className = "delete-btn";
+          deleteBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            const reservationRef = ref(db, `reservations/${dateStr}/${time}`);
+            set(reservationRef, null);
+          });
+          slot.appendChild(deleteBtn);
+        } else {
+          slot.title = "Rezervováno";
+        }
+      }
+
+      slot.addEventListener("click", () => {
+        if (slot.classList.contains("taken") && !isAdmin) return;
+
+        if (oneHourMode) {
+          const index = allSlots.indexOf(slot);
+          const group = allSlots.slice(index, index + 3);
+          if (group.length < 3 || group.some(s => s.classList.contains("taken"))) return;
+
+          allSlots.forEach(s => s.classList.remove("selected-1h"));
+          group.forEach(s => s.classList.add("selected-1h"));
+
+          selectedSlot = group.map(s => s.dataset.time);
+        } else {
+          selectedSlot = slot.dataset.time;
+        }
+
+        popupTime.textContent = selectedSlot instanceof Array ? selectedSlot.join(", ") : selectedSlot;
+        popup.classList.remove("hidden");
+      });
+
+      slot.addEventListener("mouseover", () => {
+        if (!oneHourMode || slot.classList.contains("taken")) return;
+        const index = allSlots.indexOf(slot);
+        const group = allSlots.slice(index, index + 3);
+        if (group.length < 3 || group.some(s => s.classList.contains("taken"))) return;
+        group.forEach(s => s.classList.add("selected-1h"));
+      });
+
+      slot.addEventListener("mouseout", () => {
+        if (!oneHourMode) return;
+        allSlots.forEach(s => s.classList.remove("selected-1h"));
+      });
+
+      allSlots.push(slot);
+      td.appendChild(slot);
+      row.appendChild(td);
+    });
+
+    table.appendChild(row);
+  }
+}
