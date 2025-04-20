@@ -202,3 +202,19 @@ td {
   cursor: pointer;
   margin-left: 10px;
 }
+
+
+.ban-toggle {
+  margin-left: 6px;
+  font-size: 12px;
+  background: #e91e63;
+  color: white;
+  border-radius: 4px;
+  padding: 1px 5px;
+  cursor: pointer;
+}
+.slot.banned {
+  background-color: #444 !important;
+  opacity: 0.6;
+  cursor: not-allowed;
+}
