@@ -2,33 +2,17 @@
 <html lang="cs">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Cartarena LS - Rezervace</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cartarena LS Rezervace</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div class="container">
-    <header>
-      <h1>🏁 Cartarena LS</h1>
-      <p>Online rezervace na motokáry (GTA RP)</p>
-    </header>
-
-    <section id="calendar"></section>
-
-    <div class="admin-tools" id="adminTools" style="display:none">
-      <button onclick="clearAllSlots()">🗑️ Vymazat všechny rezervace</button>
-    </div>
+    <h1>Cartarena LS – Rezervace motokár</h1>
+    <div id="slots"></div>
   </div>
 
-  <div id="popup" class="popup hidden">
-    <div class="popup-content">
-      <p id="popupText"></p>
-      <button onclick="confirmAction(true)">Ano</button>
-      <button onclick="confirmAction(false)">Ne</button>
-    </div>
-  </div>
-
-  <script src="firebase-config.js" type="module"></script>
-  <script src="script.js" type="module"></script>
+  <script type="module" src="firebase-config.js"></script>
+  <script type="module" src="script.js"></script>
 </body>
 </html>
