@@ -1,91 +1,48 @@
-import { db, ref, onValue, set, remove, push } from './firebase-config.js';
+import { db } from './firebase-config.js';
+import { ref, onValue, set, remove } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-database.js";
 
-const calendar = document.getElementById("calendar");
-const popup = document.getElementById("popup");
-const popupText = document.getElementById("popupText");
-const adminTools = document.getElementById("adminTools");
+const slotsContainer = document.getElementById("slots");
 
-let slots = [];
-let currentTargetKey = null;
-const adminCode = "admin123";
+// Vygeneruj časové sloty mezi 17:00 a 24:00 (po 10 minutách)
+function generateTimeSlots() {
+  const start = 17 * 60;
+  const end = 24 * 60;
+  let slots = [];
 
-const startHour = 17;
-const endHour = 24;
-
-function generateSlots() {
-  const today = new Date().toISOString().split('T')[0];
-  for (let h = startHour; h < endHour; h++) {
-    for (let m = 0; m < 60; m += 10) {
-      const time = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
-      const key = `${today}_${time.replace(':', '-')}`;
-      slots.push({ time, key });
-    }
+  for (let t = start; t < end; t += 10) {
+    const hours = Math.floor(t / 60);
+    const minutes = t % 60;
+    const label = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+    slots.push(label);
   }
-  slots.unshift({ time: "Celý den", key: `${today}_FULLDAY` });
+  return slots;
 }
 
-generateSlots();
+function renderSlots(reservations) {
+  slotsContainer.innerHTML = "";
 
-function renderSlots(data) {
-  calendar.innerHTML = "";
-  slots.forEach(slot => {
-    const el = document.createElement("div");
-    el.className = "slot";
-    el.textContent = slot.time;
+  generateTimeSlots().forEach(time => {
+    const isTaken = reservations && reservations[time];
+    const slot = document.createElement("div");
+    slot.className = `slot ${isTaken ? 'taken' : 'available'}`;
+    slot.innerHTML = `<span>${time}</span><span>${isTaken ? 'Obsazeno' : 'Volné'}</span>`;
 
-    if (data[slot.key]) {
-      el.classList.add("reserved");
-      el.textContent += `\n(${data[slot.key]})`;
+    if (!isTaken) {
+      slot.addEventListener("click", () => {
+        const name = prompt(`Zadej jméno pro rezervaci ${time}:`);
+        if (name) {
+          set(ref(db, 'reservations/' + time), { name });
+        }
+      });
+    } else {
+      slot.title = `Rezervováno: ${reservations[time].name}`;
     }
 
-    el.onclick = () => {
-      if (data[slot.key]) return;
-      const name = prompt("Zadej své jméno pro rezervaci:");
-      if (name) {
-        set(ref(db, `reservations/${slot.key}`), name);
-      }
-    };
-
-    el.oncontextmenu = (e) => {
-      e.preventDefault();
-      if (data[slot.key]) {
-        currentTargetKey = slot.key;
-        popupText.textContent = `Opravdu chceš zrušit rezervaci (${data[slot.key]})?`;
-        popup.classList.remove("hidden");
-      }
-    };
-
-    calendar.appendChild(el);
+    slotsContainer.appendChild(slot);
   });
 }
 
-function confirmAction(confirm) {
-  popup.classList.add("hidden");
-  if (confirm && currentTargetKey) {
-    remove(ref(db, `reservations/${currentTargetKey}`));
-  }
-  currentTargetKey = null;
-}
-
-function clearAllSlots() {
-  const sure = confirm("Opravdu smazat všechny rezervace?");
-  if (sure) remove(ref(db, "reservations"));
-}
-
-window.confirmAction = confirmAction;
-window.clearAllSlots = clearAllSlots;
-
-onValue(ref(db, "reservations"), (snapshot) => {
-  const data = snapshot.val() || {};
+onValue(ref(db, 'reservations'), (snapshot) => {
+  const data = snapshot.val();
   renderSlots(data);
-});
-
-window.addEventListener("keydown", (e) => {
-  if (e.key === "@") {
-    const code = prompt("Zadej admin kód:");
-    if (code === adminCode) {
-      adminTools.style.display = "block";
-      alert("Admin režim aktivován");
-    }
-  }
 });
