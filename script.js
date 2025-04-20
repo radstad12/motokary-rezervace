@@ -114,8 +114,17 @@ document.getElementById("adminBtn").addEventListener("click", () => {
   if (username === "radstad12" && password === "Stadlerra9") {
     alert("Přihlášen jako admin.");
     
+
 isAdmin = true;
-loadReservations(); // znovu načíst sloty a přidat ban toggle tlačítka
+const dateStr = formatDate(selectedDate);
+onValue(ref(db, 'banned/' + dateStr), (banSnap) => {
+  const bannedSlots = banSnap.val() || {};
+  onValue(ref(db, 'reservations'), (snapshot) => {
+    const data = snapshot.val();
+    generateSlotTable(data, bannedSlots);
+  });
+});
+ // znovu načíst sloty a přidat ban toggle tlačítka
 
     loadReservations(); // reload se jmény
   } else {
