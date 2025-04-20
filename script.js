@@ -117,51 +117,7 @@ document.getElementById("adminBtn").addEventListener("click", () => {
 function generateSlotTable(reservations) {
   table.innerHTML = "";
 
-  // Extra řádek s 00:00
-  const midnightRow = document.createElement("tr");
-  const midnightLabel = document.createElement("td");
-  midnightLabel.textContent = "00:00";
-  midnightLabel.className = "hour-label";
-  midnightRow.appendChild(midnightLabel);
-  const tdMid = document.createElement("td");
-  tdMid.colSpan = 3;
-  const singleMidSlot = document.createElement("div");
-  singleMidSlot.className = "slot";
-  singleMidSlot.dataset.time = "00:00";
-  singleMidSlot.textContent = "00:00";
-
-  const dateStrMid = formatDate(selectedDate);
-  if (reservations && reservations[dateStrMid] && reservations[dateStrMid]["00:00"]) {
-    const resData = reservations[dateStrMid]["00:00"];
-    singleMidSlot.classList.add("taken");
-
-    if (isAdmin) {
-      singleMidSlot.title = `Jméno: ${resData.name}\nTel: ${resData.phone}`;
-      const deleteBtn = document.createElement("button");
-      deleteBtn.textContent = "✖";
-      deleteBtn.className = "delete-btn";
-      deleteBtn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        const reservationRef = ref(db, `reservations/${dateStrMid}/00:00`);
-        set(reservationRef, null);
-      });
-      singleMidSlot.appendChild(deleteBtn);
-    } else {
-      singleMidSlot.title = "Rezervováno";
-    }
-  }
-
-  singleMidSlot.addEventListener("click", () => {
-    if (singleMidSlot.classList.contains("taken") && !isAdmin) return;
-    selectedSlot = "00:00";
-    popupTime.textContent = selectedSlot;
-    popup.classList.remove("hidden");
-  });
-
-  tdMid.appendChild(singleMidSlot);
-  midnightRow.appendChild(tdMid);
-  table.appendChild(midnightRow);
-
+  
   const dateStr = formatDate(selectedDate);
   const allSlots = [];
 
