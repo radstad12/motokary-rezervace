@@ -121,7 +121,7 @@ function generateSlotTable(reservations) {
   const dateStr = formatDate(selectedDate);
   const allSlots = [];
 
-  for (let h of [17,18,19,20,21,22,23,0,1]) {
+  for (let h of [17,18,19,20,21,22,23,00:00,01:00]) {
     const row = document.createElement("tr");
     const label = document.createElement("td");
     label.textContent = `${h}h`;
