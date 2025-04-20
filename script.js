@@ -117,7 +117,7 @@ function generateSlotTable(reservations) {
         }
       });
     }
-  });
+          popup.classList.remove("hidden");
 }
 
 function loadReservations() {
