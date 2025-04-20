@@ -26,7 +26,7 @@ function formatDate(date) {
 function generateSlotTable(reservations) {
   table.innerHTML = "";
   const dateStr = formatDate(selectedDate);
-  const allSlots = [];
+  const slotElements = [];
 
   for (let h = 17; h <= 23; h++) {
     const row = document.createElement("tr");
@@ -42,45 +42,73 @@ function generateSlotTable(reservations) {
       slot.className = "slot";
       slot.textContent = time;
       slot.dataset.time = time;
+      slot.dataset.index = slotElements.length;
+      td.appendChild(slot);
 
       if (reservations && reservations[dateStr] && reservations[dateStr][time]) {
         slot.classList.add("taken");
         slot.title = `Rezervováno: ${reservations[dateStr][time].name}`;
       }
 
-      allSlots.push(slot);
-      td.appendChild(slot);
+      slotElements.push(slot);
       row.appendChild(td);
     });
 
     table.appendChild(row);
   }
 
-  allSlots.forEach((slot, index) => {
+  slotElements.forEach((slot, index) => {
     if (!slot.classList.contains("taken")) {
-      slot.addEventListener("click", () => {
+      slot.addEventListener("mouseenter", () => {
         if (oneHourMode) {
-          document.querySelectorAll(".slot").forEach(s => s.classList.remove("selected-1h"));
+          document.querySelectorAll(".slot").forEach(s => s.classList.remove("hovered-1h"));
+          const nextThree = slotElements.slice(index, index + 3);
+          const valid = nextThree.every(s => s && !s.classList.contains("taken"));
+          if (valid && nextThree.length === 3) {
+            nextThree.forEach(s => s.classList.add("hovered-1h"));
+          }
+        }
+      });
+      slot.addEventListener("mouseleave", () => {
+        document.querySelectorAll(".slot").forEach(s => s.classList.remove("hovered-1h"));
+      });
 
-          const selectedSlots = allSlots.slice(index, index + 3);
-          const times = [];
-
-          let allAvailable = true;
-          selectedSlots.forEach(s => {
-            if (s && !s.classList.contains("taken")) {
-              s.classList.add("selected-1h");
-              times.push(s.dataset.time);
-            } else {
-              allAvailable = false;
-            }
-          });
-
-          if (allAvailable && times.length === 3) {
-            selectedSlot = times;
-            popupTime.textContent = times.join(', ');
+      slot.addEventListener("click", () => {
+        document.querySelectorAll(".slot").forEach(s => s.classList.remove("selected-1h"));
+        if (oneHourMode) {
+          const nextThree = slotElements.slice(index, index + 3);
+          const valid = nextThree.every(s => s && !s.classList.contains("taken"));
+          if (valid && nextThree.length === 3) {
+            selectedSlot = nextThree.map(s => s.dataset.time);
+            nextThree.forEach(s => s.classList.add("selected-1h"));
+            popupTime.textContent = selectedSlot.join(", ");
             popup.classList.remove("hidden");
           } else {
-            alert("Pro hodinovou rezervaci musí být volné 3 po sobě jdoucí časy.");
+            alert("Musí být volné 3 po sobě jdoucí časy.");
+          }
+        } else {
+          selectedSlot = slot.dataset.time;
+          popupTime.textContent = selectedSlot;
+          popup.classList.remove("hidden");
+        }
+      });
+    }
+  });
+    if (!slot.classList.contains("taken")) {
+      slot.addEventListener("click", () => {
+        document.querySelectorAll(".slot").forEach(s => s.classList.remove("selected-1h"));
+
+        if (oneHourMode) {
+          const toSelect = slotElements.slice(index, index + 3);
+          const available = toSelect.every(s => s && !s.classList.contains("taken"));
+
+          if (toSelect.length === 3 && available) {
+            selectedSlot = toSelect.map(s => s.dataset.time);
+            toSelect.forEach(s => s.classList.add("selected-1h"));
+            popupTime.textContent = selectedSlot.join(", ");
+            popup.classList.remove("hidden");
+          } else {
+            alert("Musí být volné 3 po sobě jdoucí časy pro hodinovou rezervaci.");
           }
         } else {
           selectedSlot = slot.dataset.time;
@@ -120,6 +148,13 @@ todayBtn.addEventListener("click", () => {
 
 hourBtn.addEventListener("click", () => {
   oneHourMode = !oneHourMode;
+  hourBtn.classList.toggle("active", oneHourMode);
+  document.querySelectorAll(".slot").forEach(s => {
+    s.classList.remove("selected-1h");
+    s.classList.remove("hovered-1h");
+  });
+});
+  oneHourMode = !oneHourMode;
   hourBtn.style.background = oneHourMode ? "#ff9100" : "#ffa500";
   document.querySelectorAll(".slot").forEach(s => s.classList.remove("selected-1h"));
 });
@@ -147,9 +182,9 @@ confirmBtn.addEventListener("click", () => {
   popup.classList.add("hidden");
   nameInput.value = "";
   phoneInput.value = "";
+  document.querySelectorAll(".slot").forEach(s => s.classList.remove("selected-1h"));
   oneHourMode = false;
   hourBtn.style.background = "#ffa500";
-  document.querySelectorAll(".slot").forEach(s => s.classList.remove("selected-1h"));
 });
 
 cancelBtn.addEventListener("click", () => {
