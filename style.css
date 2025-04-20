@@ -110,19 +110,7 @@ td {
   transform: scale(1.05);
 }
 
-#hourBtn:hover::after {
-  content: attr(title);
-  position: absolute;
-  top: 120%;
-  left: 50%;
-  transform: translateX(-50%);
-  background: #333;
-  color: #fff;
-  padding: 5px 10px;
-  border-radius: 6px;
-  white-space: nowrap;
-  z-index: 999;
-}
+
 
 .popup {
   position: fixed;
@@ -166,4 +154,14 @@ td {
 
 .popup-content button:hover {
   background: #ffbf40;
+}
+
+
+#hourBtn.active {
+  background-color: #e91e63 !important;
+}
+
+.slot.hovered-1h {
+  background-color: #ffd54f !important;
+  color: #000;
 }
