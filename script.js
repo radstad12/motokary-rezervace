@@ -1,26 +1,3 @@
-// Firebase persist zakázaných časů
-import { getDatabase, ref, set, onValue } from "firebase/database";
-const db = getDatabase();
-
-// Uloží zákaz do Firebase
-function toggleBanInDB(date, time, banned) {
-  const banRef = ref(db, 'banned/' + date + '/' + time);
-  if (banned) {
-    set(banRef, true);
-  } else {
-    set(banRef, null); // zrušení zákazu
-  }
-}
-
-// Načte zakázané sloty z Firebase
-function loadBans(dateStr, callback) {
-  const banRef = ref(db, 'banned/' + dateStr);
-  onValue(banRef, (snapshot) => {
-    callback(snapshot.val() || {});
-  });
-}
-
-
 import { db } from './firebase-config.js';
 import { ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-database.js";
 
@@ -48,16 +25,20 @@ function formatDate(date) {
 
 
 
+
 function loadReservations() {
+  const dateStr = formatDate(selectedDate);
+  onValue(ref(db, 'banned/' + dateStr), (banSnap) => {
+    const bannedSlots = banSnap.val() || {};
+    onValue(ref(db, 'reservations'), (snapshot) => {
+      const data = snapshot.val();
+      generateSlotTable(data, bannedSlots);
+    });
+  });
+
   onValue(ref(db, 'reservations'), (snapshot) => {
     const data = snapshot.val();
-    
-    const dateStr = formatDate(selectedDate);
-    loadBans(dateStr, (bannedSlots) => {
-      window.currentBans = bannedSlots;
-      generateSlotTable(data);
-    });
-    
+    generateSlotTable(data);
   });
 }
 
@@ -143,8 +124,7 @@ document.getElementById("adminBtn").addEventListener("click", () => {
 
 
 
-function generateSlotTable(reservations) {
-  const bannedTimes = window.currentBans || {};
+function generateSlotTable(reservations, bannedSlots = {}) {
   table.innerHTML = "";
 
   
@@ -220,30 +200,27 @@ function generateSlotTable(reservations) {
       });
 
       
-        if (isAdmin && !slot.classList.contains("taken")) {
-          const toggle = document.createElement("span");
-          toggle.className = "ban-toggle";
-          toggle.textContent = slot.classList.contains("banned") ? "✅" : "🚫";
-          toggle.title = slot.classList.contains("banned") ? "Povolit rezervaci" : "Zakázat rezervaci";
-          toggle.addEventListener("click", (e) => {
-            e.stopPropagation();
-            
-            const banned = slot.classList.contains("banned");
-            slot.classList.toggle("banned");
-            slot.classList.toggle("forbidden", !banned);
-            slot.title = !banned ? "Není možné rezervovat" : "";
-            toggle.textContent = !banned ? "✅" : "🚫";
-            toggle.title = !banned ? "Povolit rezervaci" : "Zakázat rezervaci";
-            toggleBanInDB(formatDate(selectedDate), time, !banned);
-    
-            slot.title = slot.classList.contains("banned") ? "Není možné rezervovat" : "";
-            toggle.textContent = slot.classList.contains("banned") ? "✅" : "🚫";
-            toggle.title = slot.classList.contains("banned") ? "Povolit rezervaci" : "Zakázat rezervaci";
-          });
-          slot.appendChild(toggle);
-        }
+      if (bannedSlots[time]) {
+        slot.classList.add("banned");
+        slot.classList.add("forbidden");
+        slot.title = "Není možné rezervovat";
+      }
 
-allSlots.push(slot);
+      if (isAdmin && !slot.classList.contains("taken")) {
+        const banToggle = document.createElement("span");
+        banToggle.textContent = bannedSlots[time] ? "✅" : "🚫";
+        banToggle.className = "ban-toggle";
+        banToggle.title = bannedSlots[time] ? "Povolit rezervaci" : "Zakázat rezervaci";
+        banToggle.addEventListener("click", (e) => {
+          e.stopPropagation();
+          const banRef = ref(db, `banned/${dateStr}/${time}`);
+          const newState = !bannedSlots[time];
+          set(banRef, newState ? true : null);
+        });
+        slot.appendChild(banToggle);
+      }
+
+      allSlots.push(slot);
       td.appendChild(slot);
       row.appendChild(td);
     });
