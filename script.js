@@ -1,3 +1,4 @@
+
 // ==== ADMIN LEAD TIME SETUP ====
 let leadTimeMinutes = 0;
 
@@ -7,11 +8,9 @@ function loadLeadTime(callback) {
     leadTimeMinutes = snapshot.val() || 0;
     if (callback) callback(leadTimeMinutes);
   });
-}
 
 function saveLeadTime(value) {
   set(ref(db, 'settings/leadTime'), parseInt(value));
-}
 
 function createLeadTimeInput() {
   let existing = document.getElementById("leadTimeContainer");
@@ -34,10 +33,8 @@ function createLeadTimeInput() {
 
   container.appendChild(input);
   document.querySelector(".date-controls")?.appendChild(container);
-}
 
   document.querySelector(".date-controls")?.appendChild(input);
-}
 
 
 import { db } from './firebase-config.js';
@@ -63,7 +60,6 @@ let oneHourMode = false;
 
 function formatDate(date) {
   return date.toISOString().split('T')[0];
-}
 
 
 
@@ -82,13 +78,11 @@ function loadReservations() {
     const data = snapshot.val();
     generateSlotTable(data);
   });
-}
 
 function changeDay(offset) {
   selectedDate.setDate(selectedDate.getDate() + offset);
   datePicker.value = formatDate(selectedDate);
   loadReservations();
-}
 
 datePicker.addEventListener("change", () => {
   selectedDate = new Date(datePicker.value);
@@ -115,7 +109,6 @@ confirmBtn.addEventListener("click", () => {
   if (!name || !phone) {
     alert("Vyplň jméno a telefonní číslo.");
     return;
-  }
 
   const dateStr = formatDate(selectedDate);
 
