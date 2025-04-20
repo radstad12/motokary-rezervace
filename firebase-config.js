@@ -1,4 +1,3 @@
-// firebase-config.js
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
 import {
   getDatabase,
@@ -12,7 +11,7 @@ import {
 const firebaseConfig = {
   apiKey: "AIzaSyBLPUkWM8j77f1rs8ZrVUAPX2AmDU9Ocx4",
   authDomain: "cartarena-ls.firebaseapp.com",
-  databaseURL: "https://cartarena-ls-default-rtdb.europe-west1.firebasedatabase.app",  // <-- TADY BYL PROBLÉM
+  **databaseURL: "https://cartarena-ls-default-rtdb.europe-west1.firebasedatabase.app",**
   projectId: "cartarena-ls",
   storageBucket: "cartarena-ls.appspot.com",
   messagingSenderId: "485144557401",
