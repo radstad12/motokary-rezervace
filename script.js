@@ -1,40 +1,3 @@
-let leadTimeMinutes = 0;
-
-function loadLeadTime(callback) {
-  const settingsRef = ref(db, 'settings/leadTime');
-  onValue(settingsRef, (snapshot) => {
-    leadTimeMinutes = snapshot.val() || 0;
-    if (callback) callback(leadTimeMinutes);
-  });
-}
-
-function saveLeadTime(value) {
-  set(ref(db, 'settings/leadTime'), parseInt(value));
-}
-
-function createLeadTimeInput() {
-  let existing = document.getElementById("leadTimeContainer");
-  if (existing) existing.remove();
-
-  const container = document.createElement("div");
-  container.id = "leadTimeContainer";
-  container.style.display = "inline-block";
-
-  const input = document.createElement("input");
-  input.type = "number";
-  input.min = 0;
-  input.placeholder = "Předstih (min)";
-  input.value = leadTimeMinutes;
-  input.style.marginLeft = "10px";
-  input.style.padding = "4px 6px";
-  input.style.borderRadius = "6px";
-  input.style.border = "1px solid #888";
-  input.addEventListener("change", () => saveLeadTime(input.value));
-
-  container.appendChild(input);
-  document.querySelector(".date-controls")?.appendChild(container);
-}
-
 import { db } from './firebase-config.js';
 import { ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-database.js";
 
@@ -161,7 +124,6 @@ onValue(ref(db, 'banned/' + dateStr), (banSnap) => {
 
   if (username === "radstad12" && password === "Stadlerra9") {
     alert("Přihlášen jako admin.");
-    loadLeadTime(createLeadTimeInput);
     
 
  // reload se jmény
@@ -270,24 +232,6 @@ function generateSlotTable(reservations, bannedSlots = {}) {
         slot.appendChild(banToggle);
       }
 
-      const now = new Date();
-      const slotDateTime = new Date(dateStr + "T" + time);
-      const diff = (slotDateTime - now) / 60000;
-      if (slotDateTime < now || diff < leadTimeMinutes) {
-        slot.classList.add("forbidden");
-        slot.title = slotDateTime < now ? "Čas již minul" : "Nelze rezervovat takto pozdě";
-      }
-      const now = new Date();
-      const slotDateTime = new Date(dateStr + "T" + time);
-      const diff = (slotDateTime - now) / 60000;
-
-      if (slotDateTime < now) {
-        slot.classList.add("forbidden");
-        slot.title = "Čas již minul";
-      } else if (diff < leadTimeMinutes) {
-        slot.classList.add("forbidden");
-        slot.title = "Rezervace je příliš brzy";
-      }
       allSlots.push(slot);
       td.appendChild(slot);
       row.appendChild(td);
