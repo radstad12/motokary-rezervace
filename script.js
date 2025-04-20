@@ -112,65 +112,7 @@ hourBtn.addEventListener("click", () => {
   hourBtn.style.background = oneHourMode ? "#ff9100" : "#ffa500";
 });
 
-function generateSlotTable(reservations) {
-  table.innerHTML = "";
-  const dateStr = formatDate(selectedDate);
 
-  for (let h = 17; h <= 23; h++) {
-    const row = document.createElement("tr");
-    const label = document.createElement("td");
-    label.textContent = `${h}h`;
-    label.className = "hour-label";
-    row.appendChild(label);
-
-    [0, 20, 40].forEach(min => {
-      const time = `${h.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')}`;
-      const td = document.createElement("td");
-      const slot = document.createElement("div");
-      slot.className = "slot";
-      slot.textContent = time;
-
-      if (reservations && reservations[dateStr] && reservations[dateStr][time]) {
-        slot.classList.add("taken");
-        slot.title = `Rezervováno: ${reservations[dateStr][time].name}`;
-      } else {
-        slot.addEventListener("click", () => {
-          if (oneHourMode) {
-            const base = h * 60 + min;
-            const nextTimes = [0, 20, 40].map(offset => {
-              const total = base + offset;
-              const hour = Math.floor(total / 60);
-              const minute = total % 60;
-              return `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
-            });
-
-            selectedSlots = nextTimes;
-            document.querySelectorAll(".slot").forEach(el => el.classList.remove("selected-1h"));
-
-            nextTimes.forEach(t => {
-              const target = Array.from(document.querySelectorAll(".slot")).find(s => s.textContent === t && !s.classList.contains("taken"));
-              if (target) target.classList.add("selected-1h");
-            });
-
-            selectedSlot = nextTimes;
-            popupTime.textContent = nextTimes.join(', ');
-            popup.classList.remove("hidden");
-
-          } else {
-            selectedSlot = time;
-            popupTime.textContent = time;
-            popup.classList.remove("hidden");
-          }
-        });
-      }
-
-      td.appendChild(slot);
-      row.appendChild(td);
-    });
-
-    table.appendChild(row);
-  }
-}
 
 confirmBtn.addEventListener("click", () => {
   const name = nameInput.value.trim();
