@@ -1,6 +1,5 @@
 import { db, ref, onValue, set, remove, push } from './firebase-config.js';
 
-
 const calendar = document.getElementById("calendar");
 const popup = document.getElementById("popup");
 const popupText = document.getElementById("popupText");
