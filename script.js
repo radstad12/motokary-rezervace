@@ -14,6 +14,13 @@ function saveLeadTime(value) {
 }
 
 function createLeadTimeInput() {
+  let existing = document.getElementById("leadTimeContainer");
+  if (existing) existing.remove();
+
+  const container = document.createElement("div");
+  container.id = "leadTimeContainer";
+  container.style.display = "inline-block";
+
   const input = document.createElement("input");
   input.type = "number";
   input.min = 0;
@@ -24,6 +31,11 @@ function createLeadTimeInput() {
   input.style.borderRadius = "6px";
   input.style.border = "1px solid #888";
   input.addEventListener("change", () => saveLeadTime(input.value));
+
+  container.appendChild(input);
+  document.querySelector(".date-controls")?.appendChild(container);
+}
+
   document.querySelector(".date-controls")?.appendChild(input);
 }
 
@@ -187,12 +199,14 @@ function generateSlotTable(reservations, bannedSlots = {}) {
       const slot = document.createElement("div");
 
       const now = new Date();
-      const isToday = formatDate(now) === dateStr;
-      const currentMinutes = now.getHours() * 60 + now.getMinutes();
-      const slotMinutes = h * 60 + min;
-      if (isToday && (slotMinutes <= currentMinutes || slotMinutes - currentMinutes < leadTimeMinutes)) {
+      const slotDate = new Date(dateStr + "T" + time);
+      if (slotDate < new Date()) {
+        slot.classList.add("forbidden");
+        slot.title = "Čas již minul";
+      } else if (isToday && (slotMinutes <= currentMinutes || slotMinutes - currentMinutes < leadTimeMinutes)) {
         slot.classList.add("forbidden");
         slot.title = slotMinutes <= currentMinutes ? "Čas již minul" : "Nelze rezervovat takto pozdě";
+      }
       }
 
       slot.className = "slot";
