@@ -277,6 +277,17 @@ function generateSlotTable(reservations, bannedSlots = {}) {
         slot.classList.add("forbidden");
         slot.title = slotDateTime < now ? "Čas již minul" : "Nelze rezervovat takto pozdě";
       }
+      const now = new Date();
+      const slotDateTime = new Date(dateStr + "T" + time);
+      const diff = (slotDateTime - now) / 60000;
+
+      if (slotDateTime < now) {
+        slot.classList.add("forbidden");
+        slot.title = "Čas již minul";
+      } else if (diff < leadTimeMinutes) {
+        slot.classList.add("forbidden");
+        slot.title = "Rezervace je příliš brzy";
+      }
       allSlots.push(slot);
       td.appendChild(slot);
       row.appendChild(td);
