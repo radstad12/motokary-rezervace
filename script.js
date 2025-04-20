@@ -1,0 +1,1 @@
+// script.js s animacemi, blokací času, statistikami, atd.
