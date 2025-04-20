@@ -165,3 +165,18 @@ td {
   background-color: #ffd54f !important;
   color: #000;
 }
+
+.header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.contact-info {
+  text-align: right;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  color: #fff;
+  font-family: 'Bungee', cursive;
+}
