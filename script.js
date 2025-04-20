@@ -58,25 +58,11 @@ function generateSlotTable(reservations) {
 
   allSlots.forEach((slot, index) => {
     if (!slot.classList.contains("taken")) {
-      
-      slot.addEventListener("mouseenter", () => {
-        if (oneHourMode) {
-          document.querySelectorAll(".slot").forEach(s => s.classList.remove("hovered-1h"));
-          const preview = slotElements.slice(index, index + 3);
-          if (preview.length === 3 && preview.every(s => !s.classList.contains("taken"))) {
-            preview.forEach(s => s.classList.add("hovered-1h"));
-          }
-        }
-      });
-      slot.addEventListener("mouseleave", () => {
-        document.querySelectorAll(".slot").forEach(s => s.classList.remove("hovered-1h"));
-      });
-
       slot.addEventListener("click", () => {
         if (oneHourMode) {
           document.querySelectorAll(".slot").forEach(s => s.classList.remove("selected-1h"));
 
-          const selectedSlots = slotElements.slice(index, index + 3);
+          const selectedSlots = allSlots.slice(index, index + 3);
           const times = [];
 
           let allAvailable = true;
@@ -134,7 +120,7 @@ todayBtn.addEventListener("click", () => {
 
 hourBtn.addEventListener("click", () => {
   oneHourMode = !oneHourMode;
-  hourBtn.style.background = oneHourMode ? "#e91e63" : "#ffa500";
+  hourBtn.style.background = oneHourMode ? "#ff9100" : "#ffa500";
   document.querySelectorAll(".slot").forEach(s => s.classList.remove("selected-1h"));
 });
 
