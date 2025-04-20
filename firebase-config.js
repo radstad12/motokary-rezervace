@@ -12,7 +12,7 @@ import {
 const firebaseConfig = {
   apiKey: "AIzaSyBLPUkWM8j77f1rs8ZrVUAPX2AmDU9Ocx4",
   authDomain: "cartarena-ls.firebaseapp.com",
-  databaseURL: "https://cartarena-ls-default-rtdb.europe-west1.firebasedatabase.app",
+  databaseURL: "https://cartarena-ls-default-rtdb.europe-west1.firebasedatabase.app",  // <-- TADY BYL PROBLÉM
   projectId: "cartarena-ls",
   storageBucket: "cartarena-ls.appspot.com",
   messagingSenderId: "485144557401",
