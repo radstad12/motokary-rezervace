@@ -1,3 +1,33 @@
+// ==== ADMIN LEAD TIME SETUP ====
+let leadTimeMinutes = 0;
+
+function loadLeadTime(callback) {
+  const settingsRef = ref(db, 'settings/leadTime');
+  onValue(settingsRef, (snapshot) => {
+    leadTimeMinutes = snapshot.val() || 0;
+    if (callback) callback(leadTimeMinutes);
+  });
+}
+
+function saveLeadTime(value) {
+  set(ref(db, 'settings/leadTime'), parseInt(value));
+}
+
+function createLeadTimeInput() {
+  const input = document.createElement("input");
+  input.type = "number";
+  input.min = 0;
+  input.placeholder = "Předstih (min)";
+  input.value = leadTimeMinutes;
+  input.style.marginLeft = "10px";
+  input.style.padding = "4px 6px";
+  input.style.borderRadius = "6px";
+  input.style.border = "1px solid #888";
+  input.addEventListener("change", () => saveLeadTime(input.value));
+  document.querySelector(".date-controls")?.appendChild(input);
+}
+
+
 import { db } from './firebase-config.js';
 import { ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-database.js";
 
@@ -110,6 +140,7 @@ let isAdmin = false;
 document.getElementById("adminBtn").addEventListener("click", () => {
 
 isAdmin = true;
+loadLeadTime(createLeadTimeInput);
 const dateStr = formatDate(selectedDate);
 onValue(ref(db, 'banned/' + dateStr), (banSnap) => {
   const bannedSlots = banSnap.val() || {};
@@ -154,6 +185,16 @@ function generateSlotTable(reservations, bannedSlots = {}) {
       const time = `${h.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')}`;
       const td = document.createElement("td");
       const slot = document.createElement("div");
+
+      const now = new Date();
+      const isToday = formatDate(now) === dateStr;
+      const currentMinutes = now.getHours() * 60 + now.getMinutes();
+      const slotMinutes = h * 60 + min;
+      if (isToday && (slotMinutes <= currentMinutes || slotMinutes - currentMinutes < leadTimeMinutes)) {
+        slot.classList.add("forbidden");
+        slot.title = slotMinutes <= currentMinutes ? "Čas již minul" : "Nelze rezervovat takto pozdě";
+      }
+
       slot.className = "slot";
       slot.textContent = time;
       slot.dataset.time = time;
