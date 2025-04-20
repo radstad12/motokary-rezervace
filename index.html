@@ -1,0 +1,242 @@
+
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cartarena LS - Rezervace</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #0f0f0f;
+      color: #f5f5f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 800px;
+      width: 100%;
+      padding: 2rem;
+      background-color: #1e1e1e;
+      border: 2px solid #444;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0, 255, 150, 0.5);
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    h1 {
+      font-size: 2rem;
+      color: #00ff99;
+      text-shadow: 0 0 8px #00ff99;
+    }
+
+    #calendar {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 1rem;
+    }
+
+    .slot {
+      background-color: #111;
+      border: 2px solid #00ff99;
+      border-radius: 8px;
+      padding: 1rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .slot:hover {
+      background-color: #00ff99;
+      color: black;
+    }
+
+    .slot.reserved {
+      background-color: #ff4444;
+      border-color: #ff4444;
+      color: white;
+      cursor: not-allowed;
+    }
+
+    .slot.reserved:hover {
+      background-color: #ff6666;
+    }
+
+    .popup {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+
+    .popup-content {
+      background-color: #222;
+      padding: 2rem;
+      border-radius: 10px;
+      text-align: center;
+      box-shadow: 0 0 10px #00ff99;
+    }
+
+    .popup-content button {
+      margin: 0.5rem;
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .admin-tools {
+      margin-top: 2rem;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🏁 Cartarena LS</h1>
+      <p>Online rezervace na motokáry (GTA RP)</p>
+    </header>
+
+    <section id="calendar"></section>
+
+    <div class="admin-tools" id="adminTools" style="display:none">
+      <button onclick="clearAllSlots()">🗑️ Vymazat všechny rezervace</button>
+    </div>
+  </div>
+
+  <!-- Popup pro potvrzení -->
+  <div id="popup" class="popup hidden">
+    <div class="popup-content">
+      <p id="popupText"></p>
+      <button onclick="confirmAction(true)">Ano</button>
+      <button onclick="confirmAction(false)">Ne</button>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js';
+    import { getDatabase, ref, onValue, set, remove } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js';
+
+    const firebaseConfig = {
+      apiKey: "TVOJE_API_KLIC",
+      authDomain: "TVUJ_PROJECT.firebaseapp.com",
+      databaseURL: "https://TVUJ_PROJECT.firebaseio.com",
+      projectId: "TVUJ_PROJECT",
+      storageBucket: "TVUJ_PROJECT.appspot.com",
+      messagingSenderId: "XXX",
+      appId: "1:XXX:web:XXX"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    const calendar = document.getElementById("calendar");
+    const popup = document.getElementById("popup");
+    const popupText = document.getElementById("popupText");
+    const adminTools = document.getElementById("adminTools");
+
+    let slots = [];
+    let currentUserAction = null;
+    let currentTargetKey = null;
+    const adminCode = "admin123";
+
+    const startHour = 17;
+    const endHour = 24;
+
+    function generateSlots() {
+      const today = new Date().toISOString().split('T')[0];
+      for (let h = startHour; h < endHour; h++) {
+        for (let m = 0; m < 60; m += 10) {
+          const time = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+          const key = `${today}_${time.replace(':', '-')}`;
+          slots.push({ time, key });
+        }
+      }
+      slots.unshift({ time: "Celý den", key: `${today}_FULLDAY` });
+    }
+
+    generateSlots();
+
+    function renderSlots(data) {
+      calendar.innerHTML = "";
+      slots.forEach(slot => {
+        const el = document.createElement("div");
+        el.className = "slot";
+        el.textContent = slot.time;
+
+        if (data[slot.key]) {
+          el.classList.add("reserved");
+          el.textContent += `
+(${data[slot.key]})`;
+        }
+
+        el.onclick = () => {
+          if (data[slot.key]) return;
+          const name = prompt("Zadej své jméno pro rezervaci:");
+          if (name) {
+            set(ref(db, `reservations/${slot.key}`), name);
+          }
+        };
+
+        el.oncontextmenu = (e) => {
+          e.preventDefault();
+          if (data[slot.key]) {
+            currentTargetKey = slot.key;
+            popupText.textContent = `Opravdu chceš zrušit rezervaci (${data[slot.key]})?`;
+            popup.classList.remove("hidden");
+          }
+        };
+
+        calendar.appendChild(el);
+      });
+    }
+
+    window.confirmAction = function(confirm) {
+      popup.classList.add("hidden");
+      if (confirm && currentTargetKey) {
+        remove(ref(db, `reservations/${currentTargetKey}`));
+      }
+      currentTargetKey = null;
+    };
+
+    window.clearAllSlots = function() {
+      const sure = confirm("Opravdu smazat všechny rezervace?");
+      if (sure) remove(ref(db, "reservations"));
+    };
+
+    onValue(ref(db, "reservations"), (snapshot) => {
+      const data = snapshot.val() || {};
+      renderSlots(data);
+    });
+
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "@") {
+        const code = prompt("Zadej admin kód:");
+        if (code === adminCode) {
+          adminTools.style.display = "block";
+          alert("Admin režim aktivován");
+        }
+      }
+    });
+  </script>
+</body>
+</html>
