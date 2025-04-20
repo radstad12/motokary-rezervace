@@ -113,7 +113,10 @@ document.getElementById("adminBtn").addEventListener("click", () => {
 
   if (username === "radstad12" && password === "Stadlerra9") {
     alert("Přihlášen jako admin.");
-    isAdmin = true;
+    
+isAdmin = true;
+loadReservations(); // znovu načíst sloty a přidat ban toggle tlačítka
+
     loadReservations(); // reload se jmény
   } else {
     alert("Neplatné přihlašovací údaje.");
