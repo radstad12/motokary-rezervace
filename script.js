@@ -1,4 +1,3 @@
-// ==== ADMIN LEAD TIME SETUP ====
 let leadTimeMinutes = 0;
 
 function loadLeadTime(callback) {
@@ -7,9 +6,11 @@ function loadLeadTime(callback) {
     leadTimeMinutes = snapshot.val() || 0;
     if (callback) callback(leadTimeMinutes);
   });
+}
 
 function saveLeadTime(value) {
   set(ref(db, 'settings/leadTime'), parseInt(value));
+}
 
 function createLeadTimeInput() {
   let existing = document.getElementById("leadTimeContainer");
@@ -32,9 +33,7 @@ function createLeadTimeInput() {
 
   container.appendChild(input);
   document.querySelector(".date-controls")?.appendChild(container);
-
-  document.querySelector(".date-controls")?.appendChild(input);
-
+}
 
 import { db } from './firebase-config.js';
 import { ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-database.js";
@@ -59,6 +58,7 @@ let oneHourMode = false;
 
 function formatDate(date) {
   return date.toISOString().split('T')[0];
+}
 
 
 
@@ -77,11 +77,13 @@ function loadReservations() {
     const data = snapshot.val();
     generateSlotTable(data);
   });
+}
 
 function changeDay(offset) {
   selectedDate.setDate(selectedDate.getDate() + offset);
   datePicker.value = formatDate(selectedDate);
   loadReservations();
+}
 
 datePicker.addEventListener("change", () => {
   selectedDate = new Date(datePicker.value);
@@ -108,6 +110,7 @@ confirmBtn.addEventListener("click", () => {
   if (!name || !phone) {
     alert("Vyplň jméno a telefonní číslo.");
     return;
+  }
 
   const dateStr = formatDate(selectedDate);
 
@@ -144,7 +147,6 @@ let isAdmin = false;
 document.getElementById("adminBtn").addEventListener("click", () => {
 
 isAdmin = true;
-loadLeadTime(createLeadTimeInput);
 const dateStr = formatDate(selectedDate);
 onValue(ref(db, 'banned/' + dateStr), (banSnap) => {
   const bannedSlots = banSnap.val() || {};
@@ -159,6 +161,7 @@ onValue(ref(db, 'banned/' + dateStr), (banSnap) => {
 
   if (username === "radstad12" && password === "Stadlerra9") {
     alert("Přihlášen jako admin.");
+    loadLeadTime(createLeadTimeInput);
     
 
  // reload se jmény
@@ -189,18 +192,6 @@ function generateSlotTable(reservations, bannedSlots = {}) {
       const time = `${h.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')}`;
       const td = document.createElement("td");
       const slot = document.createElement("div");
-
-      const now = new Date();
-      const slotDate = new Date(dateStr + "T" + time);
-      if (slotDate < new Date()) {
-        slot.classList.add("forbidden");
-        slot.title = "Čas již minul";
-      } else if (isToday && (slotMinutes <= currentMinutes || slotMinutes - currentMinutes < leadTimeMinutes)) {
-        slot.classList.add("forbidden");
-        slot.title = slotMinutes <= currentMinutes ? "Čas již minul" : "Nelze rezervovat takto pozdě";
-      }
-      }
-
       slot.className = "slot";
       slot.textContent = time;
       slot.dataset.time = time;
@@ -279,6 +270,13 @@ function generateSlotTable(reservations, bannedSlots = {}) {
         slot.appendChild(banToggle);
       }
 
+      const now = new Date();
+      const slotDateTime = new Date(dateStr + "T" + time);
+      const diff = (slotDateTime - now) / 60000;
+      if (slotDateTime < now || diff < leadTimeMinutes) {
+        slot.classList.add("forbidden");
+        slot.title = slotDateTime < now ? "Čas již minul" : "Nelze rezervovat takto pozdě";
+      }
       allSlots.push(slot);
       td.appendChild(slot);
       row.appendChild(td);
