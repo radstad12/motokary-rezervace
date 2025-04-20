@@ -1,4 +1,3 @@
-
 import { db } from './firebase-config.js';
 import { ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-database.js";
 
@@ -74,20 +73,6 @@ function generateSlotTable(reservations) {
         document.querySelectorAll(".slot").forEach(s => s.classList.remove("hovered-1h"));
       });
 
-      
-      slot.addEventListener("mouseenter", () => {
-        if (oneHourMode) {
-          document.querySelectorAll(".slot").forEach(s => s.classList.remove("hovered-1h"));
-          const nextThree = slotElements.slice(index, index + 3);
-          if (nextThree.length === 3 && nextThree.every(s => !s.classList.contains("taken"))) {
-            nextThree.forEach(s => s.classList.add("hovered-1h"));
-          }
-        }
-      });
-      slot.addEventListener("mouseleave", () => {
-        document.querySelectorAll(".slot").forEach(s => s.classList.remove("hovered-1h"));
-      });
-
       slot.addEventListener("click", () => {
         document.querySelectorAll(".slot").forEach(s => s.classList.remove("selected-1h"));
         if (oneHourMode) {
@@ -110,20 +95,6 @@ function generateSlotTable(reservations) {
     }
   });
     if (!slot.classList.contains("taken")) {
-      
-      slot.addEventListener("mouseenter", () => {
-        if (oneHourMode) {
-          document.querySelectorAll(".slot").forEach(s => s.classList.remove("hovered-1h"));
-          const nextThree = slotElements.slice(index, index + 3);
-          if (nextThree.length === 3 && nextThree.every(s => !s.classList.contains("taken"))) {
-            nextThree.forEach(s => s.classList.add("hovered-1h"));
-          }
-        }
-      });
-      slot.addEventListener("mouseleave", () => {
-        document.querySelectorAll(".slot").forEach(s => s.classList.remove("hovered-1h"));
-      });
-
       slot.addEventListener("click", () => {
         document.querySelectorAll(".slot").forEach(s => s.classList.remove("selected-1h"));
 
@@ -146,7 +117,7 @@ function generateSlotTable(reservations) {
         }
       });
     }
-          popup.classList.remove("hidden");
+  });
 }
 
 function loadReservations() {
@@ -184,7 +155,7 @@ hourBtn.addEventListener("click", () => {
   });
 });
   oneHourMode = !oneHourMode;
-  hourBtn.classList.toggle("active", oneHourMode);
+  hourBtn.style.background = oneHourMode ? "#ff9100" : "#ffa500";
   document.querySelectorAll(".slot").forEach(s => s.classList.remove("selected-1h"));
 });
 
