@@ -114,46 +114,6 @@ document.getElementById("adminBtn").addEventListener("click", () => {
 
 
 
-function generateSlotTable(reservations) {
-  table.innerHTML = "";
-
-  
-  const dateStr = formatDate(selectedDate);
-  const allSlots = [];
-
-  for (let h of [17,18,19,20,21,22,23,0,1]) {
-    const row = document.createElement("tr");
-    const label = document.createElement("td");
-    label.textContent = h < 10 ? `0${h}:00H` : `${h}:00H`;
-    label.className = "hour-label";
-    row.appendChild(label);
-
-    [0, 20, 40].forEach(min => {
-      const time = `${h.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')}`;
-      const td = document.createElement("td");
-      const slot = document.createElement("div");
-      slot.className = "slot";
-      slot.textContent = time;
-      slot.dataset.time = time;
-
-      if (reservations && reservations[dateStr] && reservations[dateStr][time]) {
-        const resData = reservations[dateStr][time];
-        slot.classList.add("taken");
-
-        if (isAdmin) {
-          slot.title = `Jméno: ${resData.name}\nTel: ${resData.phone}`;
-          const deleteBtn = document.createElement("button");
-          deleteBtn.textContent = "✖";
-          deleteBtn.className = "delete-btn";
-          deleteBtn.addEventListener("click", (e) => {
-            e.stopPropagation();
-            const reservationRef = ref(db, `reservations/${dateStr}/${time}`);
-            set(reservationRef, null);
-          });
-          slot.appendChild(deleteBtn);
-        } else {
-          slot.title = "Rezervováno";
-        }
       }
 
       slot.addEventListener("click", () => {
@@ -221,6 +181,45 @@ document.getElementById("statsBtn").addEventListener("click", () => {
 
 // Zakázané časy nastavené adminem
 let bannedTimes = [];
+
+
+      if (isAdmin && !slot.classList.contains("taken")) {
+        const banBtn = document.createElement("span");
+        banBtn.textContent = "🚫";
+        banBtn.className = "ban-btn";
+        banBtn.title = "Zakázat čas";
+        banBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          bannedTimes.push(time);
+          slot.classList.add("forbidden");
+          slot.title = "Není možné rezervovat";
+          banBtn.remove();
+        });
+        slot.appendChild(banBtn);
+      }
+
+      td.appendChild(slot);
+      row.appendChild(td);
+      allSlots.push(slot);
+    });
+
+    table.appendChild(row);
+  }
+
+  const now = new Date();
+  if (formatDate(now) === dateStr) {
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+    allSlots.forEach(slot => {
+      const [h, m] = slot.dataset.time.split(":").map(Number);
+      const slotTime = h * 60 + m;
+      if (slotTime < currentMinutes) {
+        slot.classList.add("forbidden");
+        slot.title = "Čas již minul";
+      }
+    });
+  }
+}
+
 
 function generateSlotTable(reservations) {
   table.innerHTML = "";
