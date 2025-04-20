@@ -62,7 +62,7 @@ function generateSlotTable(reservations) {
       slot.addEventListener("mouseenter", () => {
         if (oneHourMode) {
           document.querySelectorAll(".slot").forEach(s => s.classList.remove("hovered-1h"));
-          const preview = allSlots.slice(index, index + 3);
+          const preview = slotElements.slice(index, index + 3);
           if (preview.length === 3 && preview.every(s => !s.classList.contains("taken"))) {
             preview.forEach(s => s.classList.add("hovered-1h"));
           }
@@ -76,7 +76,7 @@ function generateSlotTable(reservations) {
         if (oneHourMode) {
           document.querySelectorAll(".slot").forEach(s => s.classList.remove("selected-1h"));
 
-          const selectedSlots = allSlots.slice(index, index + 3);
+          const selectedSlots = slotElements.slice(index, index + 3);
           const times = [];
 
           let allAvailable = true;
