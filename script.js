@@ -1,5 +1,5 @@
 import { db } from './firebase-config.js';
-import { ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-database.js";
+import { ref, onValue, set, push } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-database.js";
 
 const table = document.getElementById("slotTable");
 const datePicker = document.getElementById("datePicker");
@@ -23,9 +23,6 @@ function formatDate(date) {
   return date.toISOString().split('T')[0];
 }
 
-
-
-
 function loadReservations() {
   const dateStr = formatDate(selectedDate);
   onValue(ref(db, 'banned/' + dateStr), (banSnap) => {
@@ -34,11 +31,6 @@ function loadReservations() {
       const data = snapshot.val();
       generateSlotTable(data, bannedSlots);
     });
-  });
-
-  onValue(ref(db, 'reservations'), (snapshot) => {
-    const data = snapshot.val();
-    generateSlotTable(data);
   });
 }
 
@@ -76,15 +68,14 @@ confirmBtn.addEventListener("click", () => {
   }
 
   const dateStr = formatDate(selectedDate);
-
+  const reservationRef = ref(db, `reservations/${dateStr}`);
+  
   if (Array.isArray(selectedSlot)) {
     selectedSlot.forEach(time => {
-      const reservationRef = ref(db, `reservations/${dateStr}/${time}`);
-      set(reservationRef, { name, phone });
+      set(ref(db, `${reservationRef}/${time}`), { name, phone });
     });
   } else {
-    const reservationRef = ref(db, `reservations/${dateStr}/${selectedSlot}`);
-    set(reservationRef, { name, phone });
+    set(ref(db, `${reservationRef}/${selectedSlot}`), { name, phone });
   }
 
   popup.classList.add("hidden");
@@ -103,20 +94,9 @@ cancelBtn.addEventListener("click", () => {
 datePicker.value = formatDate(selectedDate);
 loadReservations();
 
-
-
 let isAdmin = false;
 
 document.getElementById("adminBtn").addEventListener("click", () => {
-const dateStr = formatDate(selectedDate);
-onValue(ref(db, 'banned/' + dateStr), (banSnap) => {
-  const bannedSlots = banSnap.val() || {};
-  onValue(ref(db, 'reservations'), (snapshot) => {
-    const data = snapshot.val();
-    generateSlotTable(data, bannedSlots);
-  });
-});
-
   const username = prompt("Zadej přihlašovací jméno:");
   const password = prompt("Zadej heslo:");
 
@@ -124,7 +104,7 @@ onValue(ref(db, 'banned/' + dateStr), (banSnap) => {
     isAdmin = true;
     alert("Přihlášen jako admin.");
     document.getElementById("addRecordBtn").classList.remove("hidden");
-    generateSlotTable();
+    loadReservations();
 
     const addRecordBtn = document.getElementById("addRecordBtn");
     if (addRecordBtn) {
@@ -137,30 +117,17 @@ onValue(ref(db, 'banned/' + dateStr), (banSnap) => {
         }
       };
     }
-
-
-    isAdmin = true;
-    alert("Přihlášen jako admin.");
-    
-
- // reload se jmény
   } else {
     alert("Neplatné přihlašovací údaje.");
   }
 });
 
-// Úprava renderování obsazeného slotu
-
-
-
 function generateSlotTable(reservations, bannedSlots = {}) {
   table.innerHTML = "";
-
-  
   const dateStr = formatDate(selectedDate);
   const allSlots = [];
 
-  for (let h of [17,18,19,20,21,22,23,0,1]) {
+  for (let h of [17, 18, 19, 20, 21, 22, 23, 0, 1]) {
     const row = document.createElement("tr");
     const label = document.createElement("td");
     label.textContent = h < 10 ? `0${h}:00H` : `${h}:00H`;
@@ -205,7 +172,6 @@ function generateSlotTable(reservations, bannedSlots = {}) {
 
           allSlots.forEach(s => s.classList.remove("selected-1h"));
           group.forEach(s => s.classList.add("selected-1h"));
-
           selectedSlot = group.map(s => s.dataset.time);
         } else {
           selectedSlot = slot.dataset.time;
@@ -228,7 +194,6 @@ function generateSlotTable(reservations, bannedSlots = {}) {
         allSlots.forEach(s => s.classList.remove("selected-1h"));
       });
 
-      
       if (bannedSlots[time]) {
         slot.classList.add("banned");
         slot.classList.add("forbidden");
@@ -258,11 +223,7 @@ function generateSlotTable(reservations, bannedSlots = {}) {
   }
 }
 
-
-
-
 const recordList = document.getElementById("hallOfFameList");
-const addRecordBtn = document.getElementById("addRecordBtn");
 
 function loadHallOfFame() {
   const recordRef = ref(db, 'hallOfFame');
@@ -278,8 +239,6 @@ function loadHallOfFame() {
     });
   });
 }
-
-
 
 window.addEventListener("load", () => {
   loadHallOfFame();
