@@ -123,6 +123,24 @@ onValue(ref(db, 'banned/' + dateStr), (banSnap) => {
   if (username === "radstad12" && password === "Stadlerra9") {
     isAdmin = true;
     alert("Přihlášen jako admin.");
+    document.getElementById("addRecordBtn").classList.remove("hidden");
+    generateSlotTable();
+
+    const addRecordBtn = document.getElementById("addRecordBtn");
+    if (addRecordBtn) {
+      addRecordBtn.onclick = () => {
+        const name = prompt("Zadej jméno:");
+        const time = prompt("Zadej čas (v sekundách, např. 42.38):");
+        if (name && time) {
+          const recordRef = ref(db, 'hallOfFame');
+          push(recordRef, { name, time });
+        }
+      };
+    }
+
+
+    isAdmin = true;
+    alert("Přihlášen jako admin.");
     
 
  // reload se jmény
@@ -261,21 +279,7 @@ function loadHallOfFame() {
   });
 }
 
-if (addRecordBtn) {
-  if (typeof isAdmin !== 'undefined' && isAdmin) {
-    addRecordBtn.classList.remove("hidden");
-    addRecordBtn.onclick = () => {
-      const name = prompt("Zadej jméno:");
-      const time = prompt("Zadej čas (v sekundách, např. 42.38):");
-      if (name && time) {
-        const recordRef = ref(db, 'hallOfFame');
-        push(recordRef, { name, time });
-      }
-    };
-  } else {
-    addRecordBtn.classList.add("hidden");
-  }
-}
+
 
 window.addEventListener("load", () => {
   loadHallOfFame();
