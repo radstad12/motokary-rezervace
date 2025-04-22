@@ -128,7 +128,6 @@ onValue(ref(db, 'banned/' + dateStr), (banSnap) => {
 
     const addRecordBtn = document.getElementById("addRecordBtn");
     if (addRecordBtn) {
-      addRecordBtn.classList.remove("hidden");
       addRecordBtn.onclick = () => {
         const name = prompt("Zadej jméno:");
         const time = prompt("Zadej čas (v sekundách, např. 42.38):");
@@ -285,23 +284,3 @@ function loadHallOfFame() {
 window.addEventListener("load", () => {
   loadHallOfFame();
 });
-
-
-function loadHallOfFame() {
-  const recordRef = ref(db, 'hallOfFame');
-  onValue(recordRef, (snapshot) => {
-    const data = snapshot.val();
-    if (!data) return;
-    const sorted = Object.values(data).sort((a, b) => parseFloat(a.time) - parseFloat(b.time)).slice(0, 10);
-    const hallList = document.getElementById("hallOfFameList");
-    if (hallList) {
-      hallList.innerHTML = "";
-      sorted.forEach((entry, index) => {
-        const li = document.createElement("li");
-        li.textContent = `${index + 1}. ${entry.name} – ${entry.time}s`;
-        hallList.appendChild(li);
-      });
-    }
-  });
-}
-window.addEventListener("load", loadHallOfFame);
