@@ -1,5 +1,5 @@
 import { db } from './firebase-config.js';
-import { ref, onValue, set, push } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-database.js";
+import { ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-database.js";
 
 const table = document.getElementById("slotTable");
 const datePicker = document.getElementById("datePicker");
@@ -14,8 +14,6 @@ const nameInput = document.getElementById("nameInput");
 const phoneInput = document.getElementById("phoneInput");
 const confirmBtn = document.getElementById("confirmBtn");
 const cancelBtn = document.getElementById("cancelBtn");
-const recordList = document.getElementById("recordList"); // Added this line
-const addRecordBtn = document.getElementById("addRecordBtn");
 
 let selectedDate = new Date();
 let selectedSlot = null;
@@ -25,6 +23,9 @@ function formatDate(date) {
   return date.toISOString().split('T')[0];
 }
 
+
+
+
 function loadReservations() {
   const dateStr = formatDate(selectedDate);
   onValue(ref(db, 'banned/' + dateStr), (banSnap) => {
@@ -33,6 +34,11 @@ function loadReservations() {
       const data = snapshot.val();
       generateSlotTable(data, bannedSlots);
     });
+  });
+
+  onValue(ref(db, 'reservations'), (snapshot) => {
+    const data = snapshot.val();
+    generateSlotTable(data);
   });
 }
 
@@ -76,7 +82,7 @@ confirmBtn.addEventListener("click", () => {
       const reservationRef = ref(db, `reservations/${dateStr}/${time}`);
       set(reservationRef, { name, phone });
     });
-  } else if (selectedSlot) {
+  } else {
     const reservationRef = ref(db, `reservations/${dateStr}/${selectedSlot}`);
     set(reservationRef, { name, phone });
   }
@@ -97,9 +103,20 @@ cancelBtn.addEventListener("click", () => {
 datePicker.value = formatDate(selectedDate);
 loadReservations();
 
+
+
 let isAdmin = false;
 
 document.getElementById("adminBtn").addEventListener("click", () => {
+const dateStr = formatDate(selectedDate);
+onValue(ref(db, 'banned/' + dateStr), (banSnap) => {
+  const bannedSlots = banSnap.val() || {};
+  onValue(ref(db, 'reservations'), (snapshot) => {
+    const data = snapshot.val();
+    generateSlotTable(data, bannedSlots);
+  });
+});
+
   const username = prompt("Zadej přihlašovací jméno:");
   const password = prompt("Zadej heslo:");
 
@@ -107,28 +124,43 @@ document.getElementById("adminBtn").addEventListener("click", () => {
     isAdmin = true;
     alert("Přihlášen jako admin.");
     document.getElementById("addRecordBtn").classList.remove("hidden");
-    loadReservations(); // Ensure reservations are loaded after login
+    generateSlotTable();
 
-    addRecordBtn.onclick = () => {
-      const name = prompt("Zadej jméno:");
-      const time = prompt("Zadej čas (v sekundách, např. 42.38):");
-      if (name && time) {
-        const recordRef = ref(db, 'hallOfFame');
-        push(recordRef, { name, time });
-      }
-    };
+    const addRecordBtn = document.getElementById("addRecordBtn");
+    if (addRecordBtn) {
+      addRecordBtn.onclick = () => {
+        const name = prompt("Zadej jméno:");
+        const time = prompt("Zadej čas (v sekundách, např. 42.38):");
+        if (name && time) {
+          const recordRef = ref(db, 'hallOfFame');
+          push(recordRef, { name, time });
+        }
+      };
+    }
+
+
+    isAdmin = true;
+    alert("Přihlášen jako admin.");
+    
+
+ // reload se jmény
   } else {
     alert("Neplatné přihlašovací údaje.");
   }
 });
 
+// Úprava renderování obsazeného slotu
+
+
+
 function generateSlotTable(reservations, bannedSlots = {}) {
   table.innerHTML = "";
 
+  
   const dateStr = formatDate(selectedDate);
   const allSlots = [];
 
-  for (let h of [17, 18, 19, 20, 21, 22, 23, 0, 1]) {
+  for (let h of [17,18,19,20,21,22,23,0,1]) {
     const row = document.createElement("tr");
     const label = document.createElement("td");
     label.textContent = h < 10 ? `0${h}:00H` : `${h}:00H`;
@@ -196,6 +228,7 @@ function generateSlotTable(reservations, bannedSlots = {}) {
         allSlots.forEach(s => s.classList.remove("selected-1h"));
       });
 
+      
       if (bannedSlots[time]) {
         slot.classList.add("banned");
         slot.classList.add("forbidden");
@@ -225,32 +258,64 @@ function generateSlotTable(reservations, bannedSlots = {}) {
   }
 }
 
+
+
+
+const addRecordBtn = document.getElementById("addRecordBtn");
+
+      recordList.appendChild(li);
+    });
+  });
+}
+
+
+
 window.addEventListener("load", () => {
   loadHallOfFame();
 });
 
-function loadHallOfFame() {
-  const recordRef = ref(db, 'hallOfFame');
-  onValue(recordRef, (snapshot) => {
-    const data = snapshot.val();
-    const list = document.getElementById("recordList");
-    list.innerHTML = "";
-
-    if (data) {
-      const sorted = Object.values(data)
-        .sort((a, b) => parseFloat(a.time) - parseFloat(b.time))
-        .slice(0, 10);
-
-      sorted.forEach(record => {
-        const li = document.createElement("li");
-        li.textContent = `${record.name} – ${record.time}s`;
         list.appendChild(li);
       });
     }
   });
 }
 
+
 // Načti Síň slávy při načtení stránky
+window.addEventListener("DOMContentLoaded", () => {
+  loadHallOfFame();
+});
+
+function loadHallOfFame() {
+  const recordRef = ref(db, 'hallOfFame');
+  const list = document.getElementById("hallOfFameList");
+
+  console.log("Načítám rekordy...");
+  if (!list) {
+    console.error("Element hallOfFameList nenalezen!");
+    return;
+  }
+
+  onValue(recordRef, (snapshot) => {
+    const data = snapshot.val();
+    console.log("Data z Firebase:", data);
+
+    list.innerHTML = "";
+
+    if (!data) {
+      console.warn("Žádná data nalezena.");
+      return;
+    }
+
+    const sorted = Object.values(data).sort((a, b) => parseFloat(a.time) - parseFloat(b.time)).slice(0, 10);
+    sorted.forEach((record, i) => {
+      const li = document.createElement("li");
+      li.textContent = `${i + 1}. ${record.name} – ${record.time}s`;
+      list.appendChild(li);
+    });
+  });
+}
+
 window.addEventListener("DOMContentLoaded", () => {
   loadHallOfFame();
 });
