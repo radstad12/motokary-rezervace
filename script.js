@@ -108,6 +108,8 @@ loadReservations();
 let isAdmin = false;
 
 document.getElementById("adminBtn").addEventListener("click", () => {
+
+isAdmin = true;
 const dateStr = formatDate(selectedDate);
 onValue(ref(db, 'banned/' + dateStr), (banSnap) => {
   const bannedSlots = banSnap.val() || {};
@@ -121,7 +123,6 @@ onValue(ref(db, 'banned/' + dateStr), (banSnap) => {
   const password = prompt("Zadej heslo:");
 
   if (username === "radstad12" && password === "Stadlerra9") {
-    isAdmin = true;
     alert("Přihlášen jako admin.");
     
 
@@ -239,3 +240,36 @@ function generateSlotTable(reservations, bannedSlots = {}) {
     table.appendChild(row);
   }
 }
+
+import { getDatabase, ref, set, push, onValue } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-database.js";
+
+const db = getDatabase();
+
+function loadRecords() {
+  const honorList = document.getElementById("honorList");
+  onValue(ref(db, 'records'), (snapshot) => {
+    const data = snapshot.val() || {};
+    const sorted = Object.values(data).sort((a, b) => a.time.localeCompare(b.time)).slice(0, 10);
+    honorList.innerHTML = sorted.map(r => `<li>${r.name}: ${r.time}</li>`).join('');
+  });
+}
+
+function setupRecordModal() {
+  const modal = document.getElementById("recordModal");
+  document.getElementById("addRecordBtn").onclick = () => modal.classList.remove("hidden");
+  document.getElementById("cancelRecordBtn").onclick = () => modal.classList.add("hidden");
+  document.getElementById("saveRecordBtn").onclick = () => {
+    const name = document.getElementById("recordName").value.trim();
+    const time = document.getElementById("recordTime").value.trim();
+    if (name && time) {
+      const newRef = push(ref(db, "records"));
+      set(newRef, { name, time });
+      modal.classList.add("hidden");
+    }
+  };
+}
+
+window.addEventListener("load", () => {
+  loadRecords();
+  setupRecordModal();
+});
