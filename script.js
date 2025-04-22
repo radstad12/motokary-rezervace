@@ -136,8 +136,8 @@ onValue(ref(db, 'banned/' + dateStr), (banSnap) => {
   } else {
     alert("Neplatné přihlašovací údaje.");
   }
-});
-
+}
+// Úprava renderování obsazeného slotu
 // Úprava renderování obsazeného slotu
 
 
