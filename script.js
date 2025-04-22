@@ -14,7 +14,7 @@ const nameInput = document.getElementById("nameInput");
 const phoneInput = document.getElementById("phoneInput");
 const confirmBtn = document.getElementById("confirmBtn");
 const cancelBtn = document.getElementById("cancelBtn");
-const recordList = document.getElementById("recordList"); // Added this line
+const recordList = document.getElementById("recordList");
 const addRecordBtn = document.getElementById("addRecordBtn");
 
 let selectedDate = new Date();
@@ -226,17 +226,6 @@ function generateSlotTable(reservations, bannedSlots = {}) {
 }
 
 window.addEventListener("load", () => {
-  loadHallOfFame();
-});
-
-        list.appendChild(li);
-      });
-    }
-  });
-}
-
-// Načti Síň slávy při načtení stránky
-window.addEventListener("DOMContentLoaded", () => {
   loadHallOfFame();
 });
 
