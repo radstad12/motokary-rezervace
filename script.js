@@ -241,8 +241,7 @@ function generateSlotTable(reservations, bannedSlots = {}) {
 }
 
 
-import { ref, push, onValue } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-database.js";
-import { db } from './firebase-config.js';
+
 
 const recordList = document.getElementById("hallOfFameList");
 const addRecordBtn = document.getElementById("addRecordBtn");
