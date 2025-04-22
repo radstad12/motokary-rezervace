@@ -240,4 +240,3 @@ function generateSlotTable(reservations, bannedSlots = {}) {
     table.appendChild(row);
   }
 }
-})
