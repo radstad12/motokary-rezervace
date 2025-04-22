@@ -108,14 +108,8 @@ loadReservations();
 let isAdmin = false;
 
 document.getElementById("adminBtn").addEventListener("click", () => {
-  const username = prompt("Zadej přihlašovací jméno:");
-  const password = prompt("Zadej heslo:");
 
-  if (username === "radstad12" && password === "Stadlerra9") {
-    isAdmin = true;
-    alert("Přihlášen jako admin.");
-    const addRecordBtn = document.getElementById("addRecordBtn");
-    if (addRecordBtn) addRecordBtn.classList.remove("hidden");
+isAdmin = true;
 const dateStr = formatDate(selectedDate);
 onValue(ref(db, 'banned/' + dateStr), (banSnap) => {
   const bannedSlots = banSnap.val() || {};
@@ -136,8 +130,8 @@ onValue(ref(db, 'banned/' + dateStr), (banSnap) => {
   } else {
     alert("Neplatné přihlašovací údaje.");
   }
-}
-// Úprava renderování obsazeného slotu
+});
+
 // Úprava renderování obsazeného slotu
 
 
@@ -246,3 +240,4 @@ function generateSlotTable(reservations, bannedSlots = {}) {
     table.appendChild(row);
   }
 }
+})
