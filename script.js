@@ -8,7 +8,7 @@ import {
   update,
   get,
 } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
-import { firebaseConfig } from "./firebase-config.js";
+import { db } from './firebase-config.js';
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
