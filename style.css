@@ -218,3 +218,37 @@ td {
   opacity: 0.6;
   cursor: not-allowed;
 }
+
+.honor-box {
+  position: absolute;
+  left: 20px;
+  top: 140px;
+  width: 260px;
+  background: rgba(0,0,0,0.85);
+  border-radius: 15px;
+  box-shadow: 0 0 20px orange;
+  padding: 20px;
+  color: white;
+  font-family: 'Bungee', cursive;
+}
+.honor-box h2 {
+  margin-top: 0;
+  text-align: center;
+}
+.honor-box ul {
+  list-style: none;
+  padding: 0;
+  margin: 10px 0;
+}
+.honor-box li {
+  margin-bottom: 6px;
+}
+.admin-only {
+  background-color: deeppink;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 8px;
+  margin-top: 10px;
+  width: 100%;
+  cursor: pointer;
+}
