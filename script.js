@@ -239,3 +239,45 @@ function generateSlotTable(reservations, bannedSlots = {}) {
     table.appendChild(row);
   }
 }
+
+
+import { ref, push, onValue } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-database.js";
+import { db } from './firebase-config.js';
+
+const recordList = document.getElementById("hallOfFameList");
+const addRecordBtn = document.getElementById("addRecordBtn");
+
+function loadHallOfFame() {
+  const recordRef = ref(db, 'hallOfFame');
+  onValue(recordRef, (snapshot) => {
+    const data = snapshot.val();
+    if (!data) return;
+    const sorted = Object.values(data).sort((a, b) => parseFloat(a.time) - parseFloat(b.time)).slice(0, 10);
+    recordList.innerHTML = "";
+    sorted.forEach((entry, index) => {
+      const li = document.createElement("li");
+      li.textContent = `${index + 1}. ${entry.name} – ${entry.time}s`;
+      recordList.appendChild(li);
+    });
+  });
+}
+
+if (addRecordBtn) {
+  if (typeof isAdmin !== 'undefined' && isAdmin) {
+    addRecordBtn.classList.remove("hidden");
+    addRecordBtn.onclick = () => {
+      const name = prompt("Zadej jméno:");
+      const time = prompt("Zadej čas (v sekundách, např. 42.38):");
+      if (name && time) {
+        const recordRef = ref(db, 'hallOfFame');
+        push(recordRef, { name, time });
+      }
+    };
+  } else {
+    addRecordBtn.classList.add("hidden");
+  }
+}
+
+window.addEventListener("load", () => {
+  loadHallOfFame();
+});
