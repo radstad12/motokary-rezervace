@@ -30,7 +30,24 @@
       </div>
     </header>
 
-    <main>
+    
+<div class="honor-box">
+  <h2>🏆 Síň slávy</h2>
+  <ul id="honorList"></ul>
+  <button id="addRecordBtn" class="admin-only hidden">Přidat rekord</button>
+</div>
+
+<div id="recordModal" class="popup hidden">
+  <div class="popup-content">
+    <h3>Přidat rekord</h3>
+    <input type="text" id="recordName" placeholder="Jméno" required />
+    <input type="text" id="recordTime" placeholder="Čas (např. 00:32.14)" required />
+    <button id="saveRecordBtn">Uložit</button>
+    <button id="cancelRecordBtn">Zrušit</button>
+  </div>
+</div>
+
+<main>
       <table id="slotTable"></table>
     </main>
 
